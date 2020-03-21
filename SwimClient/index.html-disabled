@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/swim-client.css" >
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="row">
+            <div class="col-9">
+              <div class="row">
+                <div class="border col">
+                  <button type="button" class="btn btn-primary">Load</button>
+                  <button type="button" class="btn btn-primary">Save</button>
+                  <button type="button" class="btn btn-primary">Zoom In</button>
+                  <button type="button" class="btn btn-primary">Zoom Out</button>
+                  <button type="button" class="btn btn-primary">Zoom All</button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="border swim-view col">
+                  <div align='center' id="my_canvas"></div>
+                  Swim View
+                </div>
+              </div>
+            </div>
+            <div class="border col-3">
+              List View
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="border col-12">
+          Details View
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.js"></script>
+  </body>
+
+  <script>
+
+  var canvas = d3.select("#my_canvas").append("canvas"),
+      context = canvas.node().getContext("2d"),
+      width = canvas.width,
+      height = canvas.height;
+
+  var simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+  d3.json("miserables.json", function(error, graph) {
+    if (error) throw error;
+
+    simulation
+        .nodes(graph.nodes)
+        .on("tick", ticked);
+
+    simulation.force("link")
+        .links(graph.links);
+
+    d3.select(canvas)
+        .call(d3.drag()
+            .container(canvas)
+            .subject(dragsubject)
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+    function ticked() {
+      context.clearRect(0, 0, width, height);
+
+      context.beginPath();
+      graph.links.forEach(drawLink);
+      context.strokeStyle = "#aaa";
+      context.stroke();
+
+      context.beginPath();
+      graph.nodes.forEach(drawNode);
+      context.fill();
+      context.strokeStyle = "#fff";
+      context.stroke();
+    }
+
+    function dragsubject() {
+      return simulation.find(d3.event.x, d3.event.y);
+    }
+  });
+
+  function dragstarted() {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d3.event.subject.fx = d3.event.subject.x;
+    d3.event.subject.fy = d3.event.subject.y;
+  }
+
+  function dragged() {
+    d3.event.subject.fx = d3.event.x;
+    d3.event.subject.fy = d3.event.y;
+  }
+
+  function dragended() {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d3.event.subject.fx = null;
+    d3.event.subject.fy = null;
+  }
+
+  function drawLink(d) {
+    context.moveTo(d.source.x, d.source.y);
+    context.lineTo(d.target.x, d.target.y);
+  }
+
+  function drawNode(d) {
+    context.moveTo(d.x + 3, d.y);
+    context.arc(d.x, d.y, 3, 0, 2 * Math.PI);
+  }
+
+  </script>
+
+</html>

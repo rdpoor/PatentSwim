@@ -23,6 +23,13 @@ And so on transitively...
 
 ## To run the SwimClient
 
-Open a browser and enter:
+To avoid cross-origin request issues in the browser, we run a local server:
 
-    file://{ProjectRoot}/SwimClient/index.html
+    $ cd {ProjectRoot}/SwimServer
+    $ pipenv shell
+    (SwimServer) $ cd ../SwimClient
+    (SwimServer) $ python -m http.server
+
+Now a browser and enter:
+
+    http://localhost:8000/index.html
